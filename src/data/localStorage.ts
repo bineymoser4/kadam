@@ -4,10 +4,11 @@ export function loadState<T>(key: string, fallback: T): T {
     if (!raw) return fallback;
     const parsed = JSON.parse(raw) as unknown;
     if (Array.isArray(fallback)) return (Array.isArray(parsed) ? parsed : fallback) as T;
-    if (typeof fallback === "object" && fallback && typeof parsed === "object" && parsed && !Array.isArray(parsed)) {
-      return { ...fallback, ...parsed } as T;
+    if (fallback !== null && typeof fallback === "object") {
+      return parsed !== null && typeof parsed === "object" && !Array.isArray(parsed) ? ({ ...fallback, ...parsed } as T) : fallback;
     }
-    return fallback;
+    // Primitive fallback (string, number, boolean, null) — trust the stored value as-is.
+    return parsed as T;
   } catch {
     return fallback;
   }
