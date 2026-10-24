@@ -111,12 +111,19 @@ export function findYourPlan(universityId: string): Plan | undefined {
   return getPlans().find((plan) => plan.isYou && plan.universityId === universityId);
 }
 
-function buildTaskList(improvementActions: string[]): Task[] {
+const ABROAD_DOCUMENT_TASKS: Task[] = [
+  { id: "abroad1", title: "Апостиль на аттестат/диплом", status: "to_do" },
+  { id: "abroad2", title: "Нотариально заверенный перевод документов", status: "to_do" },
+  { id: "abroad3", title: "Нострификация (признание диплома) при необходимости", status: "to_do" },
+];
+
+function buildTaskList(improvementActions: string[], isAbroad: boolean): Task[] {
   const actions = improvementActions.slice(0, 2);
   return [
     { id: "t1", title: "Собрать документы: паспорт, аттестат, транскрипт", status: "to_do" },
     ...actions.map((action, index) => ({ id: `t${index + 2}`, title: action, status: "to_do" as TaskStatus })),
     { id: "t4", title: "Подготовить черновик мотивационного письма", status: "to_do" },
+    ...(isAbroad ? ABROAD_DOCUMENT_TASKS : []),
     { id: "t5", title: "Подать заявку через официальный сайт", status: "to_do" },
   ];
 }
@@ -136,10 +143,14 @@ export function createOrGetPlanDraft(university: UniversityRecord, improvementAc
     officialWebsite: university.officialWebsite,
     status: "draft",
     createdAt: new Date().toISOString().slice(0, 10),
-    tasks: buildTaskList(improvementActions),
+    tasks: buildTaskList(improvementActions, university.raw.region !== "KGZ"),
   };
   savePlans([...plans, plan]);
   return plan;
+}
+
+export function allYourPlans(): Plan[] {
+  return getPlans().filter((plan) => plan.isYou);
 }
 
 export function sendPlanToMentor(planId: string) {
@@ -198,8 +209,8 @@ export const menteeStatusLabel: Record<MenteeStatus, string> = {
 };
 
 export const menteeStatusColor: Record<MenteeStatus, string> = {
-  needs_review: "#FACC15",
-  stuck: "#FB7185",
-  slipping: "#F59E0B",
-  on_track: "#7CFF00",
+  needs_review: "#B7791F",
+  stuck: "#E11D48",
+  slipping: "#B45309",
+  on_track: "#1f7a53",
 };

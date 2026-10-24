@@ -16,7 +16,7 @@ const statusColor: Record<Task["status"], string> = {
   to_do: "bg-slate-100 text-slate-600",
   submitted: "bg-amber-100 text-amber-700",
   needs_changes: "bg-rose-100 text-rose-700",
-  approved: "bg-[#dfff45] text-[#071014]",
+  approved: "bg-[var(--color-accent-soft)] text-[var(--color-accent)]",
 };
 
 export function PlanTasks({
@@ -40,15 +40,15 @@ export function PlanTasks({
       "Подготовьте черновик мотивационного письма.",
     ];
     return (
-      <div className="space-y-3 p-4">
+      <div className="space-y-2.5">
         <p className="text-sm font-bold text-slate-500">Черновик плана по твоим слабым местам — нажми «Создать план», чтобы отправить его ментору и начать отслеживать прогресс.</p>
         {Array.from(new Set(preview)).slice(0, 5).map((step, index) => (
-          <div key={step} className="flex gap-3 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#071014] text-sm font-black text-[#dfff45]">{index + 1}</div>
-            <p className="text-sm font-extrabold leading-relaxed text-slate-700">{step}</p>
+          <div key={step} className="flex gap-3 rounded-md border border-[var(--color-line)] bg-white p-3.5">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm bg-[var(--color-accent-soft)] text-xs font-black text-[var(--color-accent)]">{index + 1}</div>
+            <p className="text-sm font-bold leading-relaxed text-slate-700">{step}</p>
           </div>
         ))}
-        <button onClick={onCreateAndSend} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#071014] px-4 py-4 text-sm font-black uppercase tracking-wide text-[#dfff45]">
+        <button onClick={onCreateAndSend} className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[var(--color-accent)] px-4 py-3 text-sm font-black text-white hover:bg-[var(--color-accent-dark)]">
           <Send className="h-4 w-4" />
           Создать план и отправить ментору
         </button>
@@ -59,15 +59,15 @@ export function PlanTasks({
   const approvedCount = plan.tasks.filter((task) => task.status === "approved").length;
 
   return (
-    <div className="space-y-3 p-4">
-      <div className="rounded-[24px] bg-[#071014] p-4 text-white">
+    <div className="space-y-2.5">
+      <div className="rounded-md border border-[var(--color-line)] bg-white p-3.5">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#cfff00]">{plan.status === "pending_review" ? "черновик — ждёт ментора" : "план утверждён ментором"}</p>
-            <p className="mt-1 text-lg font-black">{approvedCount} из {plan.tasks.length} задач принято</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400">{plan.status === "pending_review" ? "черновик — ждёт ментора" : "план утверждён ментором"}</p>
+            <p className="mt-1 text-base font-black text-[var(--color-ink)]">{approvedCount} из {plan.tasks.length} задач принято</p>
           </div>
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
-            {plan.status === "pending_review" ? <Clock className="h-5 w-5 text-[#cfff00]" /> : <CheckCircle2 className="h-5 w-5 text-[#cfff00]" />}
+          <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-[var(--color-accent-soft)]">
+            {plan.status === "pending_review" ? <Clock className="h-4 w-4 text-[var(--color-accent)]" /> : <CheckCircle2 className="h-4 w-4 text-[var(--color-accent)]" />}
           </span>
         </div>
       </div>
@@ -86,49 +86,49 @@ function TaskRow({ task, university, onSubmit }: { task: Task; university: Unive
   const isHandoff = task.title.includes("Подать заявку");
 
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-md border border-[var(--color-line)] bg-white p-3.5">
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-black leading-relaxed text-[#071014]">{task.title}</p>
-        <span className={cn("shrink-0 rounded-full px-3 py-1 text-[10px] font-black uppercase", statusColor[task.status])}>{statusLabel[task.status]}</span>
+        <p className="text-sm font-black leading-relaxed text-[var(--color-ink)]">{task.title}</p>
+        <span className={cn("shrink-0 rounded-sm px-2 py-1 text-[10px] font-bold", statusColor[task.status])}>{statusLabel[task.status]}</span>
       </div>
 
       {task.mentorComment && (
-        <p className="mt-2 rounded-2xl bg-rose-50 p-3 text-xs font-bold leading-relaxed text-rose-700">Комментарий ментора: {task.mentorComment}</p>
+        <p className="mt-2 rounded-sm bg-rose-50 p-2.5 text-xs font-bold leading-relaxed text-rose-700">Комментарий ментора: {task.mentorComment}</p>
       )}
 
       {isHandoff && university.officialWebsite && (
-        <a href={university.officialWebsite} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#071014] px-4 py-2 text-xs font-black uppercase text-[#dfff45]">
+        <a href={university.officialWebsite} target="_blank" rel="noreferrer" className="mt-2.5 inline-flex items-center gap-1.5 rounded-sm bg-[var(--color-ink)] px-3 py-1.5 text-xs font-bold text-white">
           Открыть официальный сайт
           <ArrowUpRight className="h-3.5 w-3.5" />
         </a>
       )}
 
       {canEdit ? (
-        <div className="mt-3 space-y-2">
+        <div className="mt-2.5 space-y-2">
           <textarea
             value={text}
             onChange={(event) => setText(event.target.value)}
             placeholder="Что сделано? Короткое описание результата."
             rows={2}
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold outline-none focus:border-[#9cff00] focus:ring-4 focus:ring-[#cfff00]/20"
+            className="w-full rounded-sm border border-[var(--color-line)] bg-white px-3 py-2 text-sm font-bold outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
           />
           <input
             value={link}
             onChange={(event) => setLink(event.target.value)}
             placeholder="Ссылка на доказательство (необязательно)"
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold outline-none focus:border-[#9cff00] focus:ring-4 focus:ring-[#cfff00]/20"
+            className="w-full rounded-sm border border-[var(--color-line)] bg-white px-3 py-2 text-sm font-bold outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
           />
           <button
             disabled={!text.trim()}
             onClick={() => onSubmit({ text: text.trim(), link: link.trim() })}
-            className="inline-flex items-center gap-2 rounded-2xl bg-[#071014] px-4 py-2 text-xs font-black uppercase text-[#dfff45] disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 rounded-sm bg-[var(--color-ink)] px-3 py-1.5 text-xs font-bold text-white disabled:opacity-40"
           >
             <PencilLine className="h-3.5 w-3.5" />
             Отправить на проверку
           </button>
         </div>
       ) : (
-        task.evidenceText && <p className="mt-3 text-xs font-bold leading-relaxed text-slate-500">Доказательство: {task.evidenceText}</p>
+        task.evidenceText && <p className="mt-2.5 text-xs font-bold leading-relaxed text-slate-500">Доказательство: {task.evidenceText}</p>
       )}
     </div>
   );

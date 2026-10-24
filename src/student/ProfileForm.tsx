@@ -1,7 +1,7 @@
-import { Sparkles } from "lucide-react";
 import type { StudentProfile, StudentLevel } from "../data/profile";
 import { countryOptions, programRu } from "../university/normalize";
 import { NumberField, SelectField } from "../shared/fields";
+import { ORT_TRACKS, BENEFIT_CATEGORIES, type OrtTrackId, type BenefitCategoryId } from "../scholarships/ortThresholds";
 
 const levelOptions: StudentLevel[] = ["Школа", "Бакалавриат", "Магистратура"];
 
@@ -19,14 +19,9 @@ export function ProfileForm({
   onSubmit: () => void;
 }) {
   return (
-    <section className="rounded-[34px] border border-white/10 bg-white p-5 shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xl font-black text-[#071014]">Профиль студента</p>
-          <p className="text-sm font-bold text-slate-500">Минимум данных, максимум пользы. Оставьте поле пустым, если не знаете значение — мы не станем его угадывать.</p>
-        </div>
-        <Sparkles className="h-6 w-6 text-[#9edb00]" />
-      </div>
+    <section className="rounded-md border border-[var(--color-line)] bg-white p-5">
+      <p className="text-lg font-black text-[var(--color-ink)]">Профиль студента</p>
+      <p className="mt-1 text-sm font-bold text-slate-500">Минимум данных, максимум пользы. Оставьте поле пустым, если не знаете значение — мы не станем его угадывать.</p>
 
       <div className="mt-5 grid grid-cols-2 gap-3">
         <NumberField label="GPA" value={profile.gpa} step={0.1} max={4} onChange={(value) => onChange("gpa", value)} />
@@ -46,23 +41,23 @@ export function ProfileForm({
       </div>
 
       <label className="mt-3 block">
-        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Портфолио: {profile.portfolio}</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Портфолио: {profile.portfolio}</span>
         <input
           value={profile.portfolio}
           type="range"
           min={0}
           max={100}
           onChange={(event) => onChange("portfolio", Number(event.target.value))}
-          className="mt-4 w-full accent-[#9edb00]"
+          className="mt-3 w-full accent-[var(--color-accent)]"
         />
       </label>
 
       <label className="mt-3 block">
-        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Желаемый университет</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Желаемый университет</span>
         <select
           value={profile.desiredUniversityId ?? ""}
           onChange={(event) => onChange("desiredUniversityId", event.target.value || null)}
-          className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold outline-none transition focus:border-[#9cff00] focus:ring-4 focus:ring-[#cfff00]/20"
+          className="mt-1 w-full rounded-sm border border-[var(--color-line)] bg-white px-3.5 py-2.5 text-sm font-bold outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
         >
           <option value="">Не выбрано — покажу первый подходящий</option>
           {universityOptions.map((option) => (
@@ -73,7 +68,29 @@ export function ProfileForm({
         </select>
       </label>
 
-      <button onClick={onSubmit} className="mt-4 w-full rounded-2xl bg-[#071014] px-4 py-4 text-sm font-black uppercase tracking-wide text-[#dfff45] transition hover:bg-[#16242b]">
+      <div className="mt-5 border-t border-[var(--color-line)] pt-4">
+        <p className="text-sm font-black text-[var(--color-ink)]">Поступление в Кыргызстан</p>
+        <p className="mt-1 text-xs font-bold text-slate-500">Заполните, если сдаёте ОРТ — используется на странице кыргызских вузов.</p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <NumberField label="Балл ОРТ" value={profile.ort} onChange={(value) => onChange("ort", value)} />
+          <SelectField
+            label="Направление"
+            value={profile.ortTrack}
+            options={ORT_TRACKS.map((t) => t.id)}
+            formatOption={(id) => ORT_TRACKS.find((t) => t.id === id)?.label ?? id}
+            onChange={(value) => onChange("ortTrack", value as OrtTrackId)}
+          />
+          <SelectField
+            label="Льготная категория"
+            value={profile.benefitCategory}
+            options={BENEFIT_CATEGORIES.map((b) => b.id)}
+            formatOption={(id) => BENEFIT_CATEGORIES.find((b) => b.id === id)?.label ?? id}
+            onChange={(value) => onChange("benefitCategory", value as BenefitCategoryId)}
+          />
+        </div>
+      </div>
+
+      <button onClick={onSubmit} className="mt-5 w-full rounded-sm bg-[var(--color-accent)] px-4 py-3 text-sm font-black text-white transition hover:bg-[var(--color-accent-dark)]">
         Проверить мои шансы
       </button>
     </section>

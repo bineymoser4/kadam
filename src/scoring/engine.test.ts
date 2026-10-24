@@ -18,6 +18,9 @@ function profile(overrides: Partial<StudentProfile> = {}): StudentProfile {
     deadline: "6 месяцев",
     portfolio: 60,
     desiredUniversityId: "auca",
+    ort: null,
+    ortTrack: "general",
+    benefitCategory: "none",
     ...overrides,
   };
 }

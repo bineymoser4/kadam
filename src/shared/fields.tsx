@@ -24,7 +24,7 @@ export function NumberField({
           const raw = event.target.value;
           onChange(raw === "" ? null : Number(raw));
         }}
-        className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold outline-none transition focus:border-[#9cff00] focus:ring-4 focus:ring-[#cfff00]/20"
+        className="mt-1 w-full rounded-sm border border-[var(--color-line)] bg-white px-3.5 py-2.5 text-sm font-bold outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
       />
     </label>
   );
@@ -49,7 +49,7 @@ export function SelectField({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold outline-none transition focus:border-[#9cff00] focus:ring-4 focus:ring-[#cfff00]/20"
+        className="mt-1 w-full rounded-sm border border-[var(--color-line)] bg-white px-3.5 py-2.5 text-sm font-bold outline-none transition focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20"
       >
         {options.map((option) => (
           <option key={option} value={option}>
@@ -61,12 +61,11 @@ export function SelectField({
   );
 }
 
-export function Logo() {
+export function Logo({ size = "md" }: { size?: "sm" | "md" }) {
+  const box = size === "sm" ? "h-8 w-8" : "h-10 w-10";
   return (
-    <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-[#cfff00] text-[#071014] shadow-[0_0_24px_rgba(207,255,0,0.35)]">
-      <div className="absolute left-3 top-3 h-2 w-2 rounded-full bg-[#071014]" />
-      <div className="absolute bottom-3 right-3 h-2 w-2 rounded-full bg-[#071014]" />
-      <div className="h-5 w-5 rotate-45 rounded-sm border-l-4 border-t-4 border-[#071014]" />
+    <div className={`flex items-center justify-center rounded-md bg-[var(--color-accent)] text-white ${box}`}>
+      <span className="text-sm font-black">K</span>
     </div>
   );
 }

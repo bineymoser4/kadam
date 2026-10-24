@@ -1,4 +1,5 @@
 import { loadState, saveState } from "./localStorage";
+import type { OrtTrackId, BenefitCategoryId } from "../scholarships/ortThresholds";
 
 export type StudentLevel = "Школа" | "Бакалавриат" | "Магистратура";
 
@@ -13,6 +14,9 @@ export interface StudentProfile {
   deadline: string;
   portfolio: number;
   desiredUniversityId: string | null;
+  ort: number | null;
+  ortTrack: OrtTrackId;
+  benefitCategory: BenefitCategoryId;
 }
 
 export const profileKey = "kadam-profile-v5";
@@ -29,6 +33,9 @@ export const defaultProfile: StudentProfile = {
   deadline: "6 месяцев",
   portfolio: 58,
   desiredUniversityId: "auca",
+  ort: null,
+  ortTrack: "general",
+  benefitCategory: "none",
 };
 
 export const defaultSaved = ["auca", "berea", "amherst"];

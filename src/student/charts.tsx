@@ -28,7 +28,7 @@ export function ReadinessRadar({ data }: { data: ChartDatum[] }) {
           key={level}
           points={data.map((_, index) => point(index, level)).map((dot) => `${dot.x},${dot.y}`).join(" ")}
           fill="none"
-          stroke="rgba(255,255,255,0.16)"
+          stroke="#E3E6E1"
           strokeWidth="1"
         />
       ))}
@@ -37,35 +37,35 @@ export function ReadinessRadar({ data }: { data: ChartDatum[] }) {
         const label = point(index, 119);
         return (
           <g key={item.label}>
-            <line x1={center} y1={center} x2={outer.x} y2={outer.y} stroke="rgba(255,255,255,0.14)" />
-            <text x={label.x} y={label.y} textAnchor="middle" dominantBaseline="middle" fill="#dfff45" fontSize="11" fontWeight="900">
+            <line x1={center} y1={center} x2={outer.x} y2={outer.y} stroke="#E3E6E1" />
+            <text x={label.x} y={label.y} textAnchor="middle" dominantBaseline="middle" fill="#64748B" fontSize="11" fontWeight="800">
               {item.label}
             </text>
           </g>
         );
       })}
-      <polygon points={polygon} fill="rgba(207,255,0,0.34)" stroke="#cfff00" strokeWidth="3" />
+      <polygon points={polygon} fill="rgba(31,122,83,0.18)" stroke="#1f7a53" strokeWidth="2" />
       {data.map((item, index) => {
         const dot = point(index, item.score);
-        return <circle key={item.label} cx={dot.x} cy={dot.y} r="4" fill={item.fill} stroke="#071014" strokeWidth="2" />;
+        return <circle key={item.label} cx={dot.x} cy={dot.y} r="4" fill={item.fill} stroke="white" strokeWidth="2" />;
       })}
-      <circle cx={center} cy={center} r="3" fill="#cfff00" />
+      <circle cx={center} cy={center} r="3" fill="#1f7a53" />
     </svg>
   );
 }
 
 export function ReadinessBars({ data }: { data: ChartDatum[] }) {
   return (
-    <div className="rounded-[26px] border border-slate-200 bg-slate-50 p-4">
-      <div className="space-y-3">
+    <div className="rounded-md border border-[var(--color-line)] bg-white p-4">
+      <div className="space-y-2.5">
         {data.map((item) => (
           <div key={item.label}>
-            <div className="mb-1 flex items-center justify-between text-xs font-black text-slate-500">
+            <div className="mb-1 flex items-center justify-between text-xs font-bold text-slate-500">
               <span>{item.label}</span>
               <span>{item.score}</span>
             </div>
-            <div className="h-3 overflow-hidden rounded-full bg-white">
-              <div className="h-full rounded-full" style={{ width: `${clamp(item.score)}%`, backgroundColor: item.fill }} />
+            <div className="h-1.5 overflow-hidden rounded-sm bg-slate-100">
+              <div className="h-full rounded-sm" style={{ width: `${clamp(item.score)}%`, backgroundColor: item.fill }} />
             </div>
           </div>
         ))}

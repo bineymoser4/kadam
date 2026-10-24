@@ -4,21 +4,21 @@ import type { Role } from "../data/plans";
 
 export default function RoleScreen({ onPick }: { onPick: (role: Role) => void }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#071014] px-4 py-10 text-white">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--color-sidebar)] px-4 py-10 text-white">
       <div className="w-full max-w-3xl">
         <div className="flex items-center justify-center gap-3">
           <Logo />
           <div>
-            <p className="text-3xl font-black">Kadam</p>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#dfff45]">образование не должно зависеть от того, где ты начал</p>
+            <p className="text-2xl font-black">Kadam</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">образование не должно зависеть от того, где ты начал</p>
           </div>
         </div>
 
-        <p className="mx-auto mt-6 max-w-lg text-center text-sm font-bold leading-relaxed text-slate-400">
+        <p className="mx-auto mt-5 max-w-lg text-center text-sm font-bold leading-relaxed text-white/60">
           Без регистрации и паролей — выберите, кто вы, и попробуйте Kadam прямо сейчас.
         </p>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="mt-7 grid gap-3.5 sm:grid-cols-2">
           <RoleCard
             icon={GraduationCap}
             title="Ученик"
@@ -41,16 +41,16 @@ function RoleCard({ icon: Icon, title, description, onClick }: { icon: typeof Gr
   return (
     <button
       onClick={onClick}
-      className="group flex flex-col items-start gap-4 rounded-[30px] border border-white/10 bg-[#16242b] p-6 text-left transition hover:border-[#cfff00]/50 hover:bg-[#1c2d35]"
+      className="group flex flex-col items-start gap-3.5 rounded-md border border-white/10 bg-[var(--color-sidebar-soft)] p-5 text-left transition hover:border-[var(--color-accent)]/60"
     >
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#cfff00] text-[#071014]">
-        <Icon className="h-6 w-6" />
+      <span className="flex h-10 w-10 items-center justify-center rounded-md bg-[var(--color-accent)] text-white">
+        <Icon className="h-5 w-5" />
       </span>
       <div>
-        <p className="text-2xl font-black">{title}</p>
-        <p className="mt-2 text-sm font-bold leading-relaxed text-slate-400">{description}</p>
+        <p className="text-xl font-black">{title}</p>
+        <p className="mt-1.5 text-sm font-bold leading-relaxed text-white/60">{description}</p>
       </div>
-      <span className="mt-auto inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[#cfff00] transition group-hover:gap-3">
+      <span className="mt-auto inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.1em] text-[var(--color-accent)] transition group-hover:gap-2.5">
         Продолжить
         <ArrowRight className="h-4 w-4" />
       </span>
