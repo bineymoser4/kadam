@@ -6,7 +6,6 @@ export const WEIGHTS = {
   academic: 0.28,
   english: 0.14,
   finance: 0.18,
-  portfolio: 0.15,
   major: 0.15,
   deadline: 0.06,
   destination: 0.04,
@@ -28,7 +27,7 @@ export const STATUS_THRESHOLDS = {
   ok: 64,
 };
 
-// Confidence band by how many of the 7 top-level factors could not be scored
+// Confidence band by how many of the 6 top-level factors could not be scored
 // (missing student input or missing university target — never a guessed constant).
 export const CONFIDENCE_BANDS = {
   high: 0,

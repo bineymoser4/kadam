@@ -25,8 +25,8 @@ export function ProfileForm({
 
       <div className="mt-5 grid grid-cols-2 gap-3">
         <NumberField label="GPA" value={profile.gpa} step={0.1} max={4} onChange={(value) => onChange("gpa", value)} />
-        <NumberField label="SAT / ОРТ" value={profile.sat} onChange={(value) => onChange("sat", value)} />
-        <NumberField label="IELTS / TOEFL" value={profile.ielts} step={0.5} max={120} onChange={(value) => onChange("ielts", value)} />
+        <NumberField label="SAT" value={profile.sat} step={10} max={1600} onChange={(value) => onChange("sat", value)} />
+        <NumberField label="IELTS" value={profile.ielts} step={0.5} max={9} onChange={(value) => onChange("ielts", value)} />
         <NumberField label="Бюджет $" value={profile.budget} step={500} onChange={(value) => onChange("budget", value)} />
       </div>
 
@@ -39,18 +39,6 @@ export function ProfileForm({
         <SelectField label="Уровень" value={profile.level} options={levelOptions} onChange={(value) => onChange("level", value as StudentLevel)} />
         <SelectField label="Дедлайн" value={profile.deadline} options={["Сейчас", "6 месяцев", "12 месяцев"]} onChange={(value) => onChange("deadline", value)} />
       </div>
-
-      <label className="mt-3 block">
-        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Портфолио: {profile.portfolio}</span>
-        <input
-          value={profile.portfolio}
-          type="range"
-          min={0}
-          max={100}
-          onChange={(event) => onChange("portfolio", Number(event.target.value))}
-          className="mt-3 w-full accent-[var(--color-accent)]"
-        />
-      </label>
 
       <label className="mt-3 block">
         <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Желаемый университет</span>

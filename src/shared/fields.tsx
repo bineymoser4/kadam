@@ -1,3 +1,19 @@
+import { Moon, Sun } from "lucide-react";
+
+export function ThemeToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={dark ? "Переключить на светлую тему" : "Переключить на тёмную тему"}
+      title={dark ? "Светлая тема" : "Тёмная тема"}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-current/15 text-current/70 transition hover:bg-current/5 hover:text-current"
+    >
+      {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </button>
+  );
+}
+
 export function NumberField({
   label,
   value,

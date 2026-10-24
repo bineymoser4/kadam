@@ -16,7 +16,6 @@ function profile(overrides: Partial<StudentProfile> = {}): StudentProfile {
     major: "Computer Science",
     level: "Бакалавриат",
     deadline: "6 месяцев",
-    portfolio: 60,
     desiredUniversityId: "auca",
     ort: null,
     ortTrack: "general",
@@ -64,7 +63,7 @@ describe("chanceEngine — no constant fallbacks", () => {
 
 describe("chanceEngine — top actions", () => {
   it("only suggests actions with a real positive gain, ranked highest first", () => {
-    const weak = chanceEngine(profile({ gpa: 2.0, sat: 800, ielts: 5.0, portfolio: 10 }), auca);
+    const weak = chanceEngine(profile({ gpa: 2.0, sat: 800, ielts: 5.0 }), auca);
     expect(weak.topActions.length).toBeGreaterThan(0);
     for (let i = 1; i < weak.topActions.length; i += 1) {
       expect(weak.topActions[i - 1].gain).toBeGreaterThanOrEqual(weak.topActions[i].gain);
@@ -73,15 +72,15 @@ describe("chanceEngine — top actions", () => {
   });
 
   it("suggests nothing further once every lever is already maxed", () => {
-    const strong = chanceEngine(profile({ gpa: 4.0, sat: 1600, ielts: 9, portfolio: 100 }), auca);
+    const strong = chanceEngine(profile({ gpa: 4.0, sat: 1600, ielts: 9 }), auca);
     expect(strong.topActions.length).toBe(0);
   });
 });
 
 describe("chanceEngine — band thresholds", () => {
   it("places a strong profile in a higher band than a weak one for the same university", () => {
-    const strong = chanceEngine(profile({ gpa: 3.9, sat: 1450, ielts: 7.5, portfolio: 90 }), auca);
-    const weak = chanceEngine(profile({ gpa: 2.2, sat: 850, ielts: 5.0, portfolio: 10 }), auca);
+    const strong = chanceEngine(profile({ gpa: 3.9, sat: 1450, ielts: 7.5 }), auca);
+    const weak = chanceEngine(profile({ gpa: 2.2, sat: 850, ielts: 5.0 }), auca);
     expect(strong.score!).toBeGreaterThan(weak.score!);
   });
 });

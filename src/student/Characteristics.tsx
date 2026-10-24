@@ -34,8 +34,14 @@ export function Characteristics({ result }: { result: ChanceResult }) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-md border border-[var(--color-line)] bg-white p-4">
-        <div className="flex items-start justify-between gap-4">
+      <div className="relative overflow-hidden rounded-md border border-[var(--color-line)] bg-white p-4">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div className="absolute -right-10 -top-14 h-40 w-40 rounded-full opacity-[0.08] blur-2xl" style={{ background: "#1f7a53" }} />
+          <div className="absolute -bottom-16 -left-10 h-32 w-32 rounded-full opacity-[0.08] blur-2xl" style={{ background: "#B7791F" }} />
+          <div className="absolute right-20 bottom-0 h-20 w-20 rounded-full opacity-[0.06] blur-xl" style={{ background: "#E11D48" }} />
+        </div>
+
+        <div className="relative flex items-start justify-between gap-4">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">индекс готовности</p>
             <p className="mt-1 text-3xl font-black text-[var(--color-ink)]">{result.score == null ? "—" : `${Math.round(result.score)}/100`}</p>
@@ -43,11 +49,11 @@ export function Characteristics({ result }: { result: ChanceResult }) {
           <span className={cn("rounded-sm px-2.5 py-1 text-xs font-bold", chanceStyle[result.level])}>{result.level}</span>
         </div>
 
-        <div className="mt-2 h-[220px]">
+        <div className="relative mt-2 h-[220px]">
           <ReadinessRadar data={diagram} />
         </div>
 
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="relative grid gap-2 sm:grid-cols-2">
           <p className="rounded-sm bg-slate-50 p-2.5 text-sm font-bold text-slate-600">Сильная сторона: {strongest?.label ?? "нет данных"}</p>
           <p className="rounded-sm bg-slate-50 p-2.5 text-sm font-bold text-slate-600">Главный риск: {weakest?.label ?? "нет данных"}</p>
         </div>

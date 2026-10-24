@@ -3,10 +3,9 @@ import { ChevronDown } from "lucide-react";
 import { WEIGHTS } from "../scoring/config";
 
 const weightLabels: Record<keyof typeof WEIGHTS, string> = {
-  academic: "Академическая подготовка (GPA, SAT/ОРТ)",
-  english: "Английский язык (IELTS/TOEFL)",
+  academic: "Академическая подготовка (GPA, SAT)",
+  english: "Английский язык (IELTS)",
   finance: "Финансы (бюджет против стоимости)",
-  portfolio: "Портфолио и доказательства",
   major: "Соответствие направлению",
   deadline: "Время до дедлайна",
   destination: "Соответствие стране",

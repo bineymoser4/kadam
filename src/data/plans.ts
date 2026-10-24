@@ -25,6 +25,12 @@ export interface Plan {
   status: PlanStatus;
   createdAt: string;
   tasks: Task[];
+  documents?: PlanDocument[];
+}
+
+export interface PlanDocument {
+  name: string;
+  dataUrl: string;
 }
 
 const roleKey = "kadam-role-v1";
@@ -129,10 +135,15 @@ function buildTaskList(improvementActions: string[], isAbroad: boolean): Task[] 
 }
 
 /** Creates (or returns the existing) draft plan for this university — no AI, a plain template. */
-export function createOrGetPlanDraft(university: UniversityRecord, improvementActions: string[]): Plan {
+export function createOrGetPlanDraft(university: UniversityRecord, improvementActions: string[], documents: PlanDocument[] = []): Plan {
   const plans = getPlans();
   const existing = plans.find((plan) => plan.isYou && plan.universityId === university.id);
-  if (existing) return existing;
+  if (existing) {
+    if (!documents.length) return existing;
+    const updated = { ...existing, documents: [...(existing.documents ?? []), ...documents] };
+    savePlans(plans.map((plan) => (plan.id === existing.id ? updated : plan)));
+    return updated;
+  }
 
   const plan: Plan = {
     id: `you-${university.id}`,
@@ -144,6 +155,7 @@ export function createOrGetPlanDraft(university: UniversityRecord, improvementAc
     status: "draft",
     createdAt: new Date().toISOString().slice(0, 10),
     tasks: buildTaskList(improvementActions, university.raw.region !== "KGZ"),
+    documents,
   };
   savePlans([...plans, plan]);
   return plan;
@@ -191,6 +203,54 @@ export function reviewEvidence(planId: string, taskId: string, decision: "approv
         : plan,
     ),
   );
+}
+
+// Reuses existing Task/Plan statuses — no new persisted model. A row is
+// exactly what the per-mentee review view already treats as actionable
+// (plan approved, task submitted), just flattened across every mentee.
+export type ReviewCategory = "essay" | "documents" | "tasks";
+
+export interface ReviewRow {
+  planId: string;
+  taskId: string;
+  studentName: string;
+  universityName: string;
+  title: string;
+  evidenceText?: string;
+  evidenceLink?: string;
+  planDocuments?: PlanDocument[];
+  date: string;
+  category: ReviewCategory;
+}
+
+export function categorizeReviewTask(title: string): ReviewCategory {
+  const lower = title.toLowerCase();
+  if (lower.includes("мотивацион")) return "essay";
+  if (lower.includes("документ") || lower.includes("апостиль") || lower.includes("нотариальн") || lower.includes("нострифика") || lower.includes("паспорт")) return "documents";
+  return "tasks";
+}
+
+export function pendingReviewRows(plans: Plan[]): ReviewRow[] {
+  const rows: ReviewRow[] = [];
+  plans.forEach((plan) => {
+    if (plan.status !== "approved") return;
+    plan.tasks.forEach((task) => {
+      if (task.status !== "submitted") return;
+      rows.push({
+        planId: plan.id,
+        taskId: task.id,
+        studentName: plan.studentName,
+        universityName: plan.universityName,
+        title: task.title,
+        evidenceText: task.evidenceText,
+        evidenceLink: task.evidenceLink,
+        planDocuments: plan.documents,
+        date: plan.createdAt,
+        category: categorizeReviewTask(task.title),
+      });
+    });
+  });
+  return rows;
 }
 
 export function menteeStatus(plan: Plan): MenteeStatus {

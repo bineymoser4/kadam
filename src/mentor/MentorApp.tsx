@@ -1,28 +1,34 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, CheckCircle2, Clock, Users } from "lucide-react";
+import { ArrowDownToLine, ArrowLeft, CheckCircle2, Clock, FileText, Users } from "lucide-react";
 import {
   approvePlan,
   getPlans,
   menteeStatus,
   menteeStatusColor,
   menteeStatusLabel,
+  pendingReviewRows,
   resetDemoData,
   reviewEvidence,
   type MenteeStatus,
   type Plan,
   type Task,
 } from "../data/plans";
+import { loadMentorProfile } from "../data/mentorProfile";
 import { cn } from "../lib/utils";
 import { Dashboard } from "./Dashboard";
+import { ReviewPage } from "./ReviewPage";
+import { MentorProfilePage } from "./MentorProfilePage";
 import { MentorSideNav, MentorTabBar, MentorMobileHeader, type MentorView } from "./MentorNav";
 
-export default function MentorApp({ onSwitchRole }: { onSwitchRole: () => void }) {
+export default function MentorApp({ onSwitchRole, darkTheme, onToggleTheme }: { onSwitchRole: () => void; darkTheme: boolean; onToggleTheme: () => void }) {
   const [tick, setTick] = useState(0);
   const [view, setView] = useState<MentorView>("dashboard");
   const [openPlanId, setOpenPlanId] = useState<string | null>(null);
 
   const plans = useMemo(() => getPlans().filter((plan) => plan.status !== "draft"), [tick]);
   const openPlan = plans.find((plan) => plan.id === openPlanId) ?? null;
+  const reviewCount = useMemo(() => pendingReviewRows(plans).length, [plans]);
+  const mentorName = useMemo(() => loadMentorProfile().name, [tick, view]);
 
   const refresh = () => setTick((value) => value + 1);
 
@@ -37,10 +43,15 @@ export default function MentorApp({ onSwitchRole }: { onSwitchRole: () => void }
     setView(next);
   };
 
+  const handleReview = (planId: string, taskId: string, decision: "approved" | "needs_changes", comment: string) => {
+    reviewEvidence(planId, taskId, decision, comment);
+    refresh();
+  };
+
   return (
     <div className="min-h-screen bg-[var(--color-surface)] text-[var(--color-ink)]">
-      <MentorSideNav view={view} menteeCount={plans.length} onNavigate={navigate} onReset={handleReset} onSwitchRole={onSwitchRole} />
-      <MentorMobileHeader onReset={handleReset} onSwitchRole={onSwitchRole} />
+      <MentorSideNav view={view} plans={plans} reviewCount={reviewCount} mentorName={mentorName} onNavigate={navigate} onReset={handleReset} onSwitchRole={onSwitchRole} darkTheme={darkTheme} onToggleTheme={onToggleTheme} />
+      <MentorMobileHeader onReset={handleReset} onSwitchRole={onSwitchRole} darkTheme={darkTheme} onToggleTheme={onToggleTheme} />
 
       <main className="mx-auto max-w-[1000px] px-4 py-5 pb-20 lg:ml-[240px] lg:px-7 lg:pb-7">
         {openPlan ? (
@@ -58,12 +69,16 @@ export default function MentorApp({ onSwitchRole }: { onSwitchRole: () => void }
           />
         ) : view === "dashboard" ? (
           <Dashboard plans={plans} onOpen={setOpenPlanId} />
+        ) : view === "review" ? (
+          <ReviewPage plans={plans} onReview={handleReview} />
+        ) : view === "profile" ? (
+          <MentorProfilePage plans={plans} onSaved={refresh} />
         ) : (
           <MenteesList plans={plans} onOpen={setOpenPlanId} />
         )}
       </main>
 
-      <MentorTabBar view={view} onNavigate={navigate} />
+      <MentorTabBar view={view} reviewCount={reviewCount} onNavigate={navigate} />
     </div>
   );
 }
@@ -127,6 +142,27 @@ function ReviewQueue({
       <div className="rounded-md border border-[var(--color-line)] bg-white p-4">
         <p className="text-lg font-black text-[var(--color-ink)]">{plan.studentName}</p>
         <p className="text-sm font-bold text-slate-500">{plan.universityName}</p>
+        <div className="mt-3 grid grid-cols-3 gap-2 border-t border-[var(--color-line)] pt-3">
+          <PlanMetric label="Задач" value={String(plan.tasks.length)} />
+          <PlanMetric label="Принято" value={String(plan.tasks.filter((task) => task.status === "approved").length)} />
+          <PlanMetric label="На проверке" value={String(plan.tasks.filter((task) => task.status === "submitted").length)} />
+        </div>
+
+        <div className="mt-3 border-t border-[var(--color-line)] pt-3">
+          <p className="flex items-center gap-1.5 text-xs font-black text-[var(--color-ink)]"><FileText className="h-4 w-4 text-[var(--color-accent)]" />Документы ученика</p>
+          {!plan.documents?.length ? (
+            <p className="mt-1.5 text-xs font-bold text-slate-500">Документы пока не прикреплены.</p>
+          ) : (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {plan.documents.map((document, index) => (
+                <a key={`${document.name}-${index}`} href={document.dataUrl} download={document.name} className="inline-flex max-w-full items-center gap-1.5 rounded-sm border border-[var(--color-line)] bg-[var(--color-sidebar)] px-2.5 py-1.5 text-xs font-bold text-[var(--color-mentor-accent)] hover:bg-[var(--color-sidebar-soft)]">
+                  <ArrowDownToLine className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{document.name}</span>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
 
         {plan.status === "pending_review" ? (
           <div className="mt-3 rounded-sm bg-amber-50 p-3">
@@ -153,6 +189,15 @@ function ReviewQueue({
           <TaskReviewCard key={task.id} task={task} planApproved={plan.status === "approved"} onReview={(decision, comment) => onReview(task.id, decision, comment)} />
         ))}
       </div>
+    </div>
+  );
+}
+
+function PlanMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-sm bg-slate-50 px-2.5 py-2">
+      <p className="text-[10px] font-bold uppercase text-slate-400">{label}</p>
+      <p className="mt-0.5 text-sm font-black text-[var(--color-ink)]">{value}</p>
     </div>
   );
 }

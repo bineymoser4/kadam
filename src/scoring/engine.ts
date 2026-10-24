@@ -57,8 +57,6 @@ function computeFactors(profile: StudentProfile, raw: University): Record<Factor
 
   const finance = profile.budget == null ? null : clamp((profile.budget / Math.max(raw.annualCostUsd, 1)) * 85 + (raw.fundingStrength === "high" ? 24 : raw.fundingStrength === "medium" ? 12 : 0));
 
-  const portfolio = clamp(profile.portfolio);
-
   const major = profile.major
     ? raw.programs.some((program) => program.toLowerCase().includes(profile.major.toLowerCase()) || profile.major.toLowerCase().includes(program.toLowerCase()))
       ? 92
@@ -70,7 +68,7 @@ function computeFactors(profile: StudentProfile, raw: University): Record<Factor
   const wantedCountry = countryValue[profile.country] ?? profile.country;
   const destination = profile.country === "Любая" || wantedCountry === raw.country || (wantedCountry === "Kyrgyzstan" && raw.region === "KGZ") ? 92 : 68;
 
-  return { academic, english: ieltsScore, finance, portfolio, major, deadline, destination };
+  return { academic, english: ieltsScore, finance, major, deadline, destination };
 }
 
 function aggregate(factors: Record<FactorKey, number | null>): { score: number | null; missingCount: number } {
@@ -148,15 +146,6 @@ function buildCharacteristics(factors: Record<FactorKey, number | null>): Charac
       action: "Добавьте 3 high-aid вуза и подготовьте финансовые документы.",
     },
     {
-      label: "Портфолио",
-      short: "Доказательства",
-      score: factors.portfolio,
-      status: statusFor(factors.portfolio),
-      problem: factors.portfolio >= STATUS_THRESHOLDS.strong ? "Есть сильное подтверждение интереса." : "Недостаточно доказательств вне оценок.",
-      why: "Проекты, олимпиады и волонтёрство показывают мотивацию.",
-      action: "Соберите один проект с результатом, ссылкой и коротким описанием.",
-    },
-    {
       label: "Дедлайны",
       short: "Сроки",
       score: factors.deadline,
@@ -192,8 +181,6 @@ function computeTopActions(profile: StudentProfile, raw: University, currentScor
     const target = raw.admissionProfile.ielts;
     levers.push({ label: `Сдать IELTS на ${target}`, apply: (p) => ({ ...p, ielts: target }) });
   }
-  levers.push({ label: "Собрать сильное портфолио (90/100)", apply: (p) => ({ ...p, portfolio: 90 }) });
-
   const penalty = selectivityPenaltyFor(raw);
   const results: TopAction[] = [];
   for (const lever of levers) {

@@ -12,7 +12,6 @@ export interface StudentProfile {
   major: string;
   level: StudentLevel;
   deadline: string;
-  portfolio: number;
   desiredUniversityId: string | null;
   ort: number | null;
   ortTrack: OrtTrackId;
@@ -31,7 +30,6 @@ export const defaultProfile: StudentProfile = {
   major: "Computer Science",
   level: "Бакалавриат",
   deadline: "6 месяцев",
-  portfolio: 58,
   desiredUniversityId: "auca",
   ort: null,
   ortTrack: "general",

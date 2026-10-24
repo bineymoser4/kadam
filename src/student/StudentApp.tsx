@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { allUniversityRecords } from "../university/normalize";
 import { chanceEngine } from "../scoring/engine";
 import { loadProfile, loadSaved, saveProfile, saveSaved, type StudentProfile } from "../data/profile";
-import { allYourPlans, createOrGetPlanDraft, findYourPlan, sendPlanToMentor, submitEvidence } from "../data/plans";
+import { allYourPlans, createOrGetPlanDraft, findYourPlan, sendPlanToMentor, submitEvidence, type PlanDocument } from "../data/plans";
 import { StudentSideNav, StudentTabBar, StudentMobileHeader, type StudentView } from "./StudentNav";
 import { CatalogPage } from "./CatalogPage";
 import { UniversityPage } from "./UniversityPage";
@@ -10,11 +10,11 @@ import { PlanPage } from "./PlanPage";
 import { SavedList, Compare } from "./SavedCompare";
 import { ProfileForm } from "./ProfileForm";
 
-export default function StudentApp({ onSwitchRole }: { onSwitchRole: () => void }) {
+export default function StudentApp({ onSwitchRole, darkTheme, onToggleTheme }: { onSwitchRole: () => void; darkTheme: boolean; onToggleTheme: () => void }) {
   const [profile, setProfile] = useState<StudentProfile>(loadProfile);
   const [saved, setSaved] = useState<string[]>(loadSaved);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [view, setView] = useState<StudentView>("catalog");
+  const [view, setView] = useState<StudentView>("plan");
   const [plansTick, setPlansTick] = useState(0);
 
   const universities = allUniversityRecords;
@@ -67,6 +67,12 @@ export default function StudentApp({ onSwitchRole }: { onSwitchRole: () => void 
     setPlansTick((tick) => tick + 1);
   };
 
+  const handleCreatePlan = (university: typeof universities[number], documents: PlanDocument[]) => {
+    const universityResult = chanceEngine(profile, university);
+    createOrGetPlanDraft(university, universityResult.improvements, documents);
+    setPlansTick((tick) => tick + 1);
+  };
+
   const handleSubmitEvidence = (taskId: string, evidence: { text: string; link: string }) => {
     if (!yourPlan) return;
     submitEvidence(yourPlan.id, taskId, evidence);
@@ -74,9 +80,9 @@ export default function StudentApp({ onSwitchRole }: { onSwitchRole: () => void 
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-surface)] text-[var(--color-ink)]">
-      <StudentSideNav view={view} result={desiredResult} onNavigate={navigate} onSwitchRole={onSwitchRole} />
-      <StudentMobileHeader onSwitchRole={onSwitchRole} />
+    <div className="min-h-screen text-[var(--color-ink)]">
+      <StudentSideNav view={view} result={desiredResult} onNavigate={navigate} onSwitchRole={onSwitchRole} darkTheme={darkTheme} onToggleTheme={onToggleTheme} />
+      <StudentMobileHeader onSwitchRole={onSwitchRole} darkTheme={darkTheme} onToggleTheme={onToggleTheme} />
 
       <main className="mx-auto max-w-[1200px] px-4 py-5 pb-20 lg:ml-[240px] lg:px-7 lg:pb-7">
         {view === "university" && selectedUniversity ? (
@@ -92,7 +98,7 @@ export default function StudentApp({ onSwitchRole }: { onSwitchRole: () => void 
             onSubmitEvidence={handleSubmitEvidence}
           />
         ) : view === "plan" ? (
-          <PlanPage plans={allPlans} onOpenUniversity={openUniversity} />
+          <PlanPage plans={allPlans} universities={universities} onOpenUniversity={openUniversity} onCreatePlan={handleCreatePlan} />
         ) : view === "saved" ? (
           <SavedList universities={savedUniversities} onOpen={openUniversity} onRemove={toggleSaved} />
         ) : view === "compare" ? (
@@ -103,7 +109,7 @@ export default function StudentApp({ onSwitchRole }: { onSwitchRole: () => void 
             majors={majors}
             universityOptions={universities.map((university) => ({ id: university.id, name: university.name }))}
             onChange={setField}
-            onSubmit={() => navigate("catalog")}
+            onSubmit={() => (desiredUniversity ? openUniversity(desiredUniversity.id) : navigate("catalog"))}
           />
         ) : (
           <CatalogPage profile={profile} saved={saved} onOpen={openUniversity} onToggleSave={toggleSaved} />
