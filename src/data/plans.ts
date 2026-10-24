@@ -1,0 +1,276 @@
+import { loadState, saveState, clearKeys } from "./localStorage";
+import type { UniversityRecord } from "../university/normalize";
+
+export type Role = "student" | "mentor";
+export type TaskStatus = "to_do" | "submitted" | "needs_changes" | "approved";
+export type PlanStatus = "draft" | "pending_review" | "approved";
+export type MenteeStatus = "needs_review" | "stuck" | "slipping" | "on_track";
+
+export interface Task {
+  id: string;
+  title: string;
+  status: TaskStatus;
+  evidenceText?: string;
+  evidenceLink?: string;
+  mentorComment?: string;
+}
+
+export interface Plan {
+  id: string;
+  studentName: string;
+  isYou: boolean;
+  universityId: string;
+  universityName: string;
+  officialWebsite: string;
+  status: PlanStatus;
+  createdAt: string;
+  tasks: Task[];
+  documents?: PlanDocument[];
+}
+
+export interface PlanDocument {
+  name: string;
+  dataUrl: string;
+}
+
+const roleKey = "kadam-role-v1";
+const plansKey = "kadam-plans-v1";
+
+function seedTasks(approvedCount: number, extra?: Partial<Task>[]): Task[] {
+  const base: Task[] = [
+    { id: "t1", title: "Собрать документы: паспорт, аттестат, транскрипт", status: "to_do" },
+    { id: "t2", title: "Сдать или пересдать языковой экзамен", status: "to_do" },
+    { id: "t3", title: "Подготовить черновик мотивационного письма", status: "to_do" },
+    { id: "t4", title: "Собрать 2 рекомендации от преподавателей", status: "to_do" },
+    { id: "t5", title: "Подать заявку через официальный сайт", status: "to_do" },
+  ];
+  base.forEach((task, index) => {
+    if (index < approvedCount) task.status = "approved";
+  });
+  extra?.forEach((patch, index) => {
+    if (base[index]) Object.assign(base[index], patch);
+  });
+  return base;
+}
+
+function seedPlans(): Plan[] {
+  return [
+    {
+      id: "demo-aiperi",
+      studentName: "Айпери Б.",
+      isYou: false,
+      universityId: "auca",
+      universityName: "Американский университет в Центральной Азии",
+      officialWebsite: "https://kesiptanda.edu.gov.kg/ru/articles/4/",
+      status: "approved",
+      createdAt: "2026-04-02",
+      tasks: seedTasks(3, [
+        {},
+        {},
+        {},
+        { status: "submitted", evidenceText: "Рекомендации собраны у двух преподавателей, прикладываю фото.", evidenceLink: "" },
+        {},
+      ]),
+    },
+    {
+      id: "demo-nurlan",
+      studentName: "Нурлан Т.",
+      isYou: false,
+      universityId: "nazarbayev",
+      universityName: "Nazarbayev University",
+      officialWebsite: "",
+      status: "approved",
+      createdAt: "2026-03-18",
+      tasks: seedTasks(1, [
+        {},
+        { status: "needs_changes", evidenceText: "IELTS сдан на 5.5, ниже целевого.", mentorComment: "Нужно пересдать — запишись минимум за месяц до дедлайна." },
+        {},
+        {},
+        {},
+      ]),
+    },
+  ];
+}
+
+export function getRole(): Role | null {
+  return loadState<Role | null>(roleKey, null);
+}
+
+export function setRole(role: Role | null) {
+  saveState(roleKey, role);
+}
+
+export function getPlans(): Plan[] {
+  return loadState<Plan[]>(plansKey, seedPlans());
+}
+
+function savePlans(plans: Plan[]) {
+  saveState(plansKey, plans);
+}
+
+export function resetDemoData() {
+  clearKeys([plansKey]);
+  savePlans(seedPlans());
+}
+
+export function findYourPlan(universityId: string): Plan | undefined {
+  return getPlans().find((plan) => plan.isYou && plan.universityId === universityId);
+}
+
+const ABROAD_DOCUMENT_TASKS: Task[] = [
+  { id: "abroad1", title: "Апостиль на аттестат/диплом", status: "to_do" },
+  { id: "abroad2", title: "Нотариально заверенный перевод документов", status: "to_do" },
+  { id: "abroad3", title: "Нострификация (признание диплома) при необходимости", status: "to_do" },
+];
+
+function buildTaskList(improvementActions: string[], isAbroad: boolean): Task[] {
+  const actions = improvementActions.slice(0, 2);
+  return [
+    { id: "t1", title: "Собрать документы: паспорт, аттестат, транскрипт", status: "to_do" },
+    ...actions.map((action, index) => ({ id: `t${index + 2}`, title: action, status: "to_do" as TaskStatus })),
+    { id: "t4", title: "Подготовить черновик мотивационного письма", status: "to_do" },
+    ...(isAbroad ? ABROAD_DOCUMENT_TASKS : []),
+    { id: "t5", title: "Подать заявку через официальный сайт", status: "to_do" },
+  ];
+}
+
+/** Creates (or returns the existing) draft plan for this university — no AI, a plain template. */
+export function createOrGetPlanDraft(university: UniversityRecord, improvementActions: string[], documents: PlanDocument[] = []): Plan {
+  const plans = getPlans();
+  const existing = plans.find((plan) => plan.isYou && plan.universityId === university.id);
+  if (existing) {
+    if (!documents.length) return existing;
+    const updated = { ...existing, documents: [...(existing.documents ?? []), ...documents] };
+    savePlans(plans.map((plan) => (plan.id === existing.id ? updated : plan)));
+    return updated;
+  }
+
+  const plan: Plan = {
+    id: `you-${university.id}`,
+    studentName: "Вы",
+    isYou: true,
+    universityId: university.id,
+    universityName: university.name,
+    officialWebsite: university.officialWebsite,
+    status: "draft",
+    createdAt: new Date().toISOString().slice(0, 10),
+    tasks: buildTaskList(improvementActions, university.raw.region !== "KGZ"),
+    documents,
+  };
+  savePlans([...plans, plan]);
+  return plan;
+}
+
+export function allYourPlans(): Plan[] {
+  return getPlans().filter((plan) => plan.isYou);
+}
+
+export function sendPlanToMentor(planId: string) {
+  const plans = getPlans();
+  savePlans(plans.map((plan) => (plan.id === planId ? { ...plan, status: "pending_review" as PlanStatus } : plan)));
+}
+
+export function approvePlan(planId: string) {
+  const plans = getPlans();
+  savePlans(plans.map((plan) => (plan.id === planId ? { ...plan, status: "approved" as PlanStatus } : plan)));
+}
+
+export function submitEvidence(planId: string, taskId: string, evidence: { text: string; link: string }) {
+  const plans = getPlans();
+  savePlans(
+    plans.map((plan) =>
+      plan.id === planId
+        ? {
+            ...plan,
+            tasks: plan.tasks.map((task) =>
+              task.id === taskId ? { ...task, status: "submitted" as TaskStatus, evidenceText: evidence.text, evidenceLink: evidence.link, mentorComment: undefined } : task,
+            ),
+          }
+        : plan,
+    ),
+  );
+}
+
+export function reviewEvidence(planId: string, taskId: string, decision: "approved" | "needs_changes", comment: string) {
+  const plans = getPlans();
+  savePlans(
+    plans.map((plan) =>
+      plan.id === planId
+        ? {
+            ...plan,
+            tasks: plan.tasks.map((task) => (task.id === taskId ? { ...task, status: decision as TaskStatus, mentorComment: comment || undefined } : task)),
+          }
+        : plan,
+    ),
+  );
+}
+
+// Reuses existing Task/Plan statuses — no new persisted model. A row is
+// exactly what the per-mentee review view already treats as actionable
+// (plan approved, task submitted), just flattened across every mentee.
+export type ReviewCategory = "essay" | "documents" | "tasks";
+
+export interface ReviewRow {
+  planId: string;
+  taskId: string;
+  studentName: string;
+  universityName: string;
+  title: string;
+  evidenceText?: string;
+  evidenceLink?: string;
+  planDocuments?: PlanDocument[];
+  date: string;
+  category: ReviewCategory;
+}
+
+export function categorizeReviewTask(title: string): ReviewCategory {
+  const lower = title.toLowerCase();
+  if (lower.includes("мотивацион")) return "essay";
+  if (lower.includes("документ") || lower.includes("апостиль") || lower.includes("нотариальн") || lower.includes("нострифика") || lower.includes("паспорт")) return "documents";
+  return "tasks";
+}
+
+export function pendingReviewRows(plans: Plan[]): ReviewRow[] {
+  const rows: ReviewRow[] = [];
+  plans.forEach((plan) => {
+    if (plan.status !== "approved") return;
+    plan.tasks.forEach((task) => {
+      if (task.status !== "submitted") return;
+      rows.push({
+        planId: plan.id,
+        taskId: task.id,
+        studentName: plan.studentName,
+        universityName: plan.universityName,
+        title: task.title,
+        evidenceText: task.evidenceText,
+        evidenceLink: task.evidenceLink,
+        planDocuments: plan.documents,
+        date: plan.createdAt,
+        category: categorizeReviewTask(task.title),
+      });
+    });
+  });
+  return rows;
+}
+
+export function menteeStatus(plan: Plan): MenteeStatus {
+  if (plan.status === "pending_review") return "needs_review";
+  if (plan.tasks.some((task) => task.status === "needs_changes")) return "stuck";
+  if (plan.tasks.some((task) => task.status === "submitted")) return "needs_review";
+  if (!plan.tasks.some((task) => task.status === "approved")) return "slipping";
+  return "on_track";
+}
+
+export const menteeStatusLabel: Record<MenteeStatus, string> = {
+  needs_review: "ждёт проверки",
+  stuck: "застрял",
+  slipping: "нет прогресса",
+  on_track: "в графике",
+};
+
+export const menteeStatusColor: Record<MenteeStatus, string> = {
+  needs_review: "#B7791F",
+  stuck: "#E11D48",
+  slipping: "#B45309",
+  on_track: "#1f7a53",
+};
